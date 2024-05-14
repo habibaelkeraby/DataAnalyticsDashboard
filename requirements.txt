@@ -1,4 +1,5 @@
 streamlit
 requests
 pandas
-seaborn
+streamlit-dynamic-filters
+plost
