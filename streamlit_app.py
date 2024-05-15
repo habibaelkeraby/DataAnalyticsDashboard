@@ -6,14 +6,14 @@ import plost
 from functions import *
 
 st.set_page_config(
-  page_title="Post-Event Data Analysis Report",
-  page_icon="📊",
-  layout="wide",
-  #initial_sidebar_state="expanded"
+    page_title="Post-Event Data Analysis Report",
+    page_icon="📊",
+    layout="wide",
+    #initial_sidebar_state="expanded"
 )
 
-
 # Fetching data from API
+
 
 @st.cache_data
 def fetch_data():
@@ -22,49 +22,52 @@ def fetch_data():
   API_KEY = "W3kwgy2Tn40zr0rHwBFL18ov4Bb5FHA5eZw9CC38knZBb"
   size = 37
   pageNumber = 0
-  url = event_link + "api/users/search/findByEventIdAndGroupId?projection=withUserGroup&eventId=" + str(eventId) + "&groupId=2&size=" + str(size) + "&page=" + str(pageNumber)
-  r = requests.get(url, headers={"X-BIZMATCH-API-KEY":API_KEY})
-  
+  url = event_link + "api/users/search/findByEventIdAndGroupId?projection=withUserGroup&eventId=" + str(
+      eventId) + "&groupId=2&size=" + str(size) + "&page=" + str(pageNumber)
+  r = requests.get(url, headers={"X-BIZMATCH-API-KEY": API_KEY})
+
   # initialize list of lists
   all_data = []
-  
+
   dataset = r.json()
   users = dataset['_embedded']['users']
   max_page = dataset['page']['totalPages']
-    
+
   while pageNumber < max_page:
     for i in range(size):
       data = users[i]
       user_data = extract_user_data(data)
       all_data.append(user_data)
     pageNumber += 1
-    r = requests.get(url, headers={"X-BIZMATCH-API-KEY":API_KEY})
+    r = requests.get(url, headers={"X-BIZMATCH-API-KEY": API_KEY})
     dataset = r.json()
     users = dataset['_embedded']['users']
 
   return all_data
 
+
 all_data = fetch_data()
 
 # Create the pandas DataFrame
-df = pd.DataFrame(all_data, 
-                  columns=['user_salutation',
-                           'user_name',
-                           #'user_level',
-                           'user_designation',
-                           'user_email',
-                           'user_verified',
-                           'country_name',
-                           'country_region',
-                           'country_subregion',
-                           'company_name',
-                           'company_industrylist',
-                           'user_wanteddeals',
-                           'user_interestlist'
-                      ]
-                  )
+df = pd.DataFrame(
+    all_data,
+    columns=[
+        'user_salutation',
+        'user_name',
+        #'user_level',
+        'user_designation',
+        'user_email',
+        'user_verified',
+        'country_name',
+        'country_region',
+        'country_subregion',
+        'company_name',
+        'company_industrylist',
+        'user_wanteddeals',
+        'user_interestlist'
+    ])
 
-df.fillna("Not Specified",inplace=True)
+df.fillna("Not Specified", inplace=True)
 #st.write(df)
 
 ####################
@@ -72,7 +75,6 @@ df.fillna("Not Specified",inplace=True)
 
 # dashboard title
 st.title("Post-Event Data Analysis Dashboard")
-
 
 # REPORT SECTION 1
 st.header("Attendee Demographics")
@@ -83,22 +85,11 @@ st.markdown("**An Overview in Numbers**")
 # create 4 columns for number cards
 card1, card2, card3, card4 = st.columns(4)
 # fill in those three columns with respective metrics or KPIs
-card1.metric(
-    label="Countries",
-    value=len(df.country_name.unique())
-)
-card2.metric(
-    label="Participants",
-    value=len(df.user_name.unique())
-)
-card3.metric(
-    label="Companies",
-    value=len(df.company_name.unique())
-)
-card4.metric(
-    label="Job Titles/Designations",
-    value=len(df.user_designation.unique())
-)
+card1.metric(label="Countries", value=len(df.country_name.unique()))
+card2.metric(label="Participants", value=len(df.user_name.unique()))
+card3.metric(label="Companies", value=len(df.company_name.unique()))
+card4.metric(label="Job Titles/Designations",
+             value=len(df.user_designation.unique()))
 # insert horizontal divider
 st.divider()
 
@@ -106,7 +97,8 @@ col1, col2 = st.columns([0.3, 0.7], gap="large")
 #df_filtered=df[['user_name','country_name','country_region', 'country_subregion','company_name', 'user_designation']]
 with col1:
   # Apply filter on the dataframe
-  dynamic_filters = DynamicFilters(df, filters=['country_name', 'company_name', 'user_designation'])
+  dynamic_filters = DynamicFilters(
+      df, filters=['country_name', 'company_name', 'user_designation'])
   st.write("Apply filters in any order 👇")
   dynamic_filters.display_filters(location='columns', num_columns=1)
   #dynamic_filters.display_df()
@@ -123,13 +115,11 @@ with col1:
 with col2:
 
   # Create a pie chart to show the participant gender distribution
-  plost.pie_chart(
-    data=df_filtered.groupby(['user_salutation']).user_name.count().reset_index(),
-    theta='user_name',
-    color='user_salutation',
-    title="Participants per Salutation"
-    )
-
+  plost.pie_chart(data=df_filtered.groupby(['user_salutation'
+                                            ]).user_name.count().reset_index(),
+                  theta='user_name',
+                  color='user_salutation',
+                  title="Participants per Salutation")
 
   # Create a bar chart to show the number of users per country
   plost.bar_chart(
@@ -137,31 +127,30 @@ with col2:
       bar='country_name',
       value='user_name',
       direction='horizontal',
-      title="Participants per Country"
-  )
+      title="Participants per Country")
 
   # Create a bar chart to show the number of users per region
-  plost.bar_chart(
-    data=df_filtered.groupby(['country_region']).user_name.count().reset_index(),
-      bar='country_region',
-      value='user_name',
-      color='country_region',
-      direction='horizontal',
-      title="Participant Geographic Distribution"
-  )
+  plost.bar_chart(data=df_filtered.groupby(['country_region'
+                                            ]).user_name.count().reset_index(),
+                  bar='country_region',
+                  value='user_name',
+                  color='country_region',
+                  direction='horizontal',
+                  title="Participant Geographic Distribution")
 
   # Detailed view of geographical data
-  with st.expander("View details of participant distribution by geographical region:"):
-    st.write(df_filtered.groupby(['country_region', 'country_subregion']).user_name.count().reset_index())
-    
-  # Create a pie chart to show the number of users per designation
-  plost.pie_chart(
-      data=df_filtered.groupby(['user_designation']).user_name.count().reset_index(),
-      theta='user_name',
-      color='user_designation',
-      title="Participant Designation Distribution"
-      )
+  with st.expander(
+      "View details of participant distribution by geographical region:"):
+    st.write(
+        df_filtered.groupby(['country_region', 'country_subregion'
+                             ]).user_name.count().reset_index())
 
+  # Create a pie chart to show the number of users per designation
+  plost.pie_chart(data=df_filtered.groupby(['user_designation'
+                                            ]).user_name.count().reset_index(),
+                  theta='user_name',
+                  color='user_designation',
+                  title="Participant Designation Distribution")
 
 ####################
 
@@ -171,12 +160,11 @@ st.header("Engagement Analysis")
 st.divider()
 
 # Create a pie chart to show the participant gender distribution
-plost.pie_chart(
-  data=df.groupby(['user_verified']).user_name.count().reset_index(),
-  theta='user_name',
-  color='user_verified',
-  title="Participant Account Verification Rate"
-  )
+plost.pie_chart(data=df.groupby(['user_verified'
+                                 ]).user_name.count().reset_index(),
+                theta='user_name',
+                color='user_verified',
+                title="Participant Account Verification Rate")
 
 ####################
 
@@ -185,16 +173,43 @@ st.header("Cross Preference Analysis")
 # insert horizontal divider
 st.divider()
 
-st.markdown("**Top Interests based on Participant Job Designation**")
+c1, c2 = st.columns(2)
 
-# Create a df to store top interests per designation
-designation_df = pd.DataFrame(columns=['user_designation','top_interests'])
+with c1:
+  st.markdown("**Top Interests based on Participant Job Designation**")
 
-# Loop to find top interests for each unique designation
-for i in range(len(df.user_designation.unique())):
-  # Append new row to df
-  new_row = {"user_designation": df.user_designation.unique()[i], "top_interests": get_top_interests(df.user_designation.unique()[i], df)}
-  designation_df = pd.concat([designation_df, pd.DataFrame([new_row])], ignore_index=True)
+  # Create a df to store top interests per designation
+  interests_df = pd.DataFrame(columns=['user_designation', 'top_interests'])
 
-# Display df
-st.dataframe(designation_df)
+  # Loop to find top interests for each unique designation
+  for i in range(len(df.user_designation.unique())):
+    # Append new row to df
+    new_row = {
+        "user_designation": df.user_designation.unique()[i],
+        "top_interests": get_top_interests(df.user_designation.unique()[i], df)
+    }
+    interests_df = pd.concat(
+        [interests_df, pd.DataFrame([new_row])], ignore_index=True)
+
+  # Display df
+  st.dataframe(interests_df)
+
+with c2:
+  st.markdown("**Top Industries based on Participant Job Designation**")
+
+  # Create a df to store top interests per designation
+  industries_df = pd.DataFrame(columns=['user_designation', 'top_industries'])
+
+  # Loop to find top interests for each unique designation
+  for i in range(len(df.user_designation.unique())):
+    # Append new row to df
+    new_row = {
+        "user_designation": df.user_designation.unique()[i],
+        "top_industries": get_top_industries(df.user_designation.unique()[i],
+                                             df)
+    }
+    industries_df = pd.concat(
+        [industries_df, pd.DataFrame([new_row])], ignore_index=True)
+
+  # Display df
+  st.dataframe(industries_df)
