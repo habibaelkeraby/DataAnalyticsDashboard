@@ -155,12 +155,12 @@ with col2:
                     title="Participant Designation Distribution")
 
 
-# Create a pie chart to show the participant attendance rate
-plost.pie_chart(data=df_users.groupby(['user_attendance'
-                                       ]).user_name.count().reset_index(),
-                theta='user_name',
-                color='user_attendance',
-                title="Participant Attendance Rate")
+    # Create a pie chart to show the participant attendance rate
+    plost.pie_chart(data=df_filtered.groupby(['user_attendance'
+                                           ]).user_name.count().reset_index(),
+                    theta='user_name',
+                    color='user_attendance',
+                    title="Participant Attendance Rate")
 
 
 ####################
