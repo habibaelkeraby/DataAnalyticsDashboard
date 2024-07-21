@@ -92,7 +92,7 @@ st.write(df_users)
 # DATA VISUALIZATION SECTION
 
 # dashboard title
-st.title("Post-Event Data Analysis Dashboard")
+st.title("Data Analysis Dashboard - DEMO")
 
 # REPORT SECTION 1
 
