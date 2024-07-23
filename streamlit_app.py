@@ -68,24 +68,24 @@ for i in range(size):
 df_users = pd.DataFrame(
     all_data,
     columns=['user_salutation',
-             'user_email',
-             'user_name',
-             'user_city',
-             'user_attendance',
-             'company_name',
-             'country_name',
-             'user_occupation',
-             'user_industry',
-             'user_offerlist',
-             'user_interestlist',
-             'user_lookingforlist',
-             'user_category',
-             'company_size',
-             'user_partners']
+          'user_email',
+          'user_name',
+          'user_city',
+          'user_attendance',
+          'company_name',
+          'country_name',
+          'user_occupation',
+          'user_industry',
+          'user_offerlist',
+          'user_interestlist',
+          'user_lookingforlist',
+          'user_category',
+          'company_size',
+          'user_partners']
 )
 
 df_users.fillna("Not Specified", inplace=True)
-st.write(df_users)
+#st.write(df_users)
 
 
 ####################
@@ -112,8 +112,10 @@ card4.metric(label="Job Titles/Designations",
              value=len(df_users.user_occupation.unique()))
 card5.metric(label="Industries Represented", value=len(df_users.user_industry.unique()))
 
+####################
 
-st.header("Attendee Demographics")
+# REPORT SECTION 2
+st.header("Profile Analysis")
 # insert horizontal divider
 st.divider()
 
@@ -156,16 +158,45 @@ with col2:
 
 
     # Create a pie chart to show the participant attendance rate
-    plost.pie_chart(data=df_filtered.groupby(['user_attendance'
-                                           ]).user_name.count().reset_index(),
+    plost.pie_chart(data=df_filtered.groupby(['user_attendance']).user_name.count().reset_index(),
                     theta='user_name',
                     color='user_attendance',
                     title="Participant Attendance Rate")
+    
+    # Create a pie chart to show the participant category distribution
+    df_filtered['user_category'] = df_filtered['user_category'].apply(lambda x: ', '.join(x))
+    df_categories = df_filtered['user_category'].value_counts().reset_index()
+
+    plost.pie_chart(data=df_categories,
+        theta='count',
+        color='user_category',
+        title="Participant Category Distribution"
+       )
+
+    # Create a pie chart to show the company size distribution
+    df_filtered['company_size'] = df_filtered['company_size'].apply(lambda x: ', '.join(x))
+   
+    plost.pie_chart(data=df_filtered.groupby(['company_size']).user_name.count().reset_index(),
+                    theta='user_name',
+                    color='company_size',
+                    title="Company Size Distribution")
+
+
+
+
+    # Create a pie chart to show the partners wanted
+    df_filtered['user_partners'] = df_filtered['user_partners'].apply(lambda x: ', '.join(x))
+
+    plost.pie_chart(data=df_filtered.groupby(['user_partners']).user_name.count().reset_index(),
+                    theta='user_name',
+                    color='user_partners',
+                    title="Partner Preference Distribution")
+    
 
 
 ####################
 
-# REPORT SECTION 2
+# REPORT SECTION 3
 st.header("Cross Preference Analysis")
 # insert horizontal divider
 st.divider()
@@ -191,3 +222,25 @@ for i in range(len(df_users.user_occupation.unique())):
 # Display df
 st.dataframe(interests_df)
 
+# Insert horizontal divider
+st.divider()
+st.markdown('**All profile data**')
+df_users = pd.DataFrame(
+    all_data,
+    columns=['Salutation',
+             'Email',
+             'Full Name',
+             'City',
+             'Attendance',
+             'Company Name',
+             'Country',
+             'Occupation',
+             'Industry',
+             'Offers',
+             'Interests',
+             'Looking for',
+             'Category',
+             'Company Size',
+             'Partners']
+)
+st.write(df_users)
