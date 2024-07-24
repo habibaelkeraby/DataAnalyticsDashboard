@@ -4,6 +4,7 @@ import pandas as pd
 from streamlit_dynamic_filters import DynamicFilters
 import plost
 from functions import *
+import plotly.express as px
 
 st.set_page_config(
     page_title="Data Analysis Report DEMO",
@@ -124,7 +125,7 @@ col1, col2 = st.columns([0.3, 0.7], gap="large")
 with col1:
     # Apply filter on the dataframe
     dynamic_filters = DynamicFilters(
-        df_users, filters=['country_name', 'company_name', 'user_occupation'])
+        df_users, filters=['country_name', 'company_name', 'user_occupation', 'user_salutation'])
     st.write("Apply filters in any order 👇")
     dynamic_filters.display_filters(location='columns', num_columns=1)
     #dynamic_filters.display_df()
@@ -134,63 +135,101 @@ with col1:
 with col2:
 
     # Create a pie chart to show the participant gender distribution
-    plost.pie_chart(data=df_filtered.groupby(
-        ['user_salutation']).user_name.count().reset_index(),
-                    theta='user_name',
-                    color='user_salutation',
-                    title="Participants per Salutation")
+    #plost.pie_chart(data=df_filtered.groupby(
+        #['user_salutation']).user_name.count().reset_index(),
+                    #theta='user_name',
+                    #color='user_salutation',
+                    #title="Participants per Salutation")
+
+    fig = px.pie(df_filtered.groupby(['user_salutation']).user_name.count().reset_index(),
+         values='user_name', names='user_salutation', title='Participant per Salutation')
+    #fig.update_traces(textposition='inside')
+    #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    st.plotly_chart(fig, key="user_salutation", on_select="rerun")
 
     # Create a bar chart to show the number of users per country
-    plost.bar_chart(data=df_filtered.groupby(
-        'country_name').user_name.count().reset_index(),
-                    bar='country_name',
-                    value='user_name',
-                    direction='horizontal',
-                    title="Participants per Country")
+    #plost.bar_chart(data=df_filtered.groupby(
+        #'country_name').user_name.count().reset_index(),
+                    #bar='country_name',
+                    #value='user_name',
+                    #direction='horizontal',
+                    #title="Participants per Country")
+
+    fig = px.bar(df_filtered.groupby('country_name').user_name.count().reset_index(),
+                 y='user_name', x='country_name', text='user_name', title='Participants per Country')
+    #fig.update_traces(texttemplate='%{text:s}', textposition='outside')
+    #fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
+    st.plotly_chart(fig, key="country_name", on_select="rerun")
 
 
     # Create a pie chart to show the number of users per designation
-    plost.pie_chart(data=df_filtered.groupby(
-        ['user_occupation']).user_name.count().reset_index(),
-                    theta='user_name',
-                    color='user_occupation',
-                    title="Participant Designation Distribution")
+    #plost.pie_chart(data=df_filtered.groupby(
+        #['user_occupation']).user_name.count().reset_index(),
+                    #theta='user_name',
+                    #color='user_occupation',
+                    #title="Participant Designation Distribution")
+
+    fig = px.pie(df_filtered.groupby(['user_occupation']).user_name.count().reset_index(),
+         values='user_name', names='user_occupation', title='Participant Designation Distribution')
+    fig.update_traces(textposition='inside')
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    st.plotly_chart(fig, key="user_occupation", on_select="rerun")
 
 
     # Create a pie chart to show the participant attendance rate
-    plost.pie_chart(data=df_filtered.groupby(['user_attendance']).user_name.count().reset_index(),
-                    theta='user_name',
-                    color='user_attendance',
-                    title="Participant Attendance Rate")
+    #plost.pie_chart(data=df_filtered.groupby(['user_attendance']).user_name.count().reset_index(),
+                    #theta='user_name',
+                    #color='user_attendance',
+                    #title="Participant Attendance Rate")
+
+    fig = px.pie(df_filtered.groupby(['user_attendance']).user_name.count().reset_index(),
+         values='user_name', names='user_attendance', title='Participant Attendance Rate')
+    fig.update_traces(textposition='inside')
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    st.plotly_chart(fig, key="user_attendance", on_select="rerun")
     
     # Create a pie chart to show the participant category distribution
     df_filtered['user_category'] = df_filtered['user_category'].apply(lambda x: ', '.join(x))
     df_categories = df_filtered['user_category'].value_counts().reset_index()
 
-    plost.pie_chart(data=df_categories,
-        theta='count',
-        color='user_category',
-        title="Participant Category Distribution"
-       )
+    #plost.pie_chart(data=df_categories,
+        #theta='count',
+        #color='user_category',
+        #title="Participant Category Distribution")
+    
+    fig = px.pie(df_categories, values='count', names='user_category', title='Participant Category Distribution')
+    fig.update_traces(textposition='inside')
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    st.plotly_chart(fig, key="categories", on_select="rerun")
 
     # Create a pie chart to show the company size distribution
     df_filtered['company_size'] = df_filtered['company_size'].apply(lambda x: ', '.join(x))
    
-    plost.pie_chart(data=df_filtered.groupby(['company_size']).user_name.count().reset_index(),
-                    theta='user_name',
-                    color='company_size',
-                    title="Company Size Distribution")
+    #plost.pie_chart(data=df_filtered.groupby(['company_size']).user_name.count().reset_index(),
+                    #theta='user_name',
+                    #color='company_size',
+                    #title="Company Size Distribution")
 
-
+    fig = px.pie(df_filtered.groupby(['company_size']).user_name.count().reset_index(),
+                 values='user_name', names='company_size', title='Company Size Distribution')
+    #fig.update_traces(textposition='inside')
+    #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    st.plotly_chart(fig, key="company_size", on_select="rerun")
 
 
     # Create a pie chart to show the partners wanted
     df_filtered['user_partners'] = df_filtered['user_partners'].apply(lambda x: ', '.join(x))
 
-    plost.pie_chart(data=df_filtered.groupby(['user_partners']).user_name.count().reset_index(),
-                    theta='user_name',
-                    color='user_partners',
-                    title="Partner Preference Distribution")
+    #plost.pie_chart(data=df_filtered.groupby(['user_partners']).user_name.count().reset_index(),
+                    #theta='user_name',
+                    #color='user_partners',
+                    #title="Partner Preference Distribution")
+
+    fig = px.pie(df_filtered.groupby(['user_partners']).user_name.count().reset_index(),
+         values='user_name', names='user_partners', title='Partner Preference Distribution')
+    fig.update_traces(textposition='inside')
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    st.plotly_chart(fig, key="user_partners", on_select="rerun")
     
 
 
@@ -220,7 +259,7 @@ for i in range(len(df_users.user_occupation.unique())):
         [interests_df, pd.DataFrame([new_row])], ignore_index=True)
 
 # Display df
-st.dataframe(interests_df)
+st.dataframe(interests_df, use_container_width=True)
 
 # Insert horizontal divider
 st.divider()
