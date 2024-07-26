@@ -10,9 +10,9 @@ Output is list of top 5 interests related to the designation given
 
 def get_top_interests(filter_term, df):
   # Filter df by designation specified
-  filtered_df = df[df["user_occupation"]==filter_term]
+  filtered_df = df[df["Occupation"]==filter_term]
   # Extract all interests selected
-  interest_list = filtered_df["user_interestlist"].explode().unique() 
+  interest_list = filtered_df["Interests"].explode().unique() 
   # Remove nested lists
   interest_list = [str(item) for item in interest_list if not isinstance(item,list)]
   # Join all items as a single string then split 

@@ -68,21 +68,21 @@ for i in range(size):
 # Create the pandas DataFrame for users
 df_users = pd.DataFrame(
     all_data,
-    columns=['user_salutation',
-          'user_email',
-          'user_name',
-          'user_city',
-          'user_attendance',
-          'company_name',
-          'country_name',
-          'user_occupation',
-          'user_industry',
-          'user_offerlist',
-          'user_interestlist',
-          'user_lookingforlist',
-          'user_category',
-          'company_size',
-          'user_partners']
+    columns=['Salutation',
+     'Email',
+     'Name',
+     'City',
+     'Attendance',
+     'Company',
+     'Country',
+     'Occupation',
+     'Industry',
+     'Offers',
+     'Interests',
+     'Looking for',
+     'Category',
+     'Company Size',
+     'Partners']
 )
 
 df_users.fillna("Not Specified", inplace=True)
@@ -106,12 +106,12 @@ st.divider()
 # create 4 columns for number cards
 card1, card2, card3, card4, card5 = st.columns(5)
 # fill in those three columns with respective metrics or KPIs
-card1.metric(label="Countries", value=len(df_users.country_name.unique()))
-card2.metric(label="Participants", value=len(df_users.user_name.unique()))
-card3.metric(label="Companies", value=len(df_users.company_name.unique()))
+card1.metric(label="Countries", value=len(df_users['Country'].unique()))
+card2.metric(label="Participants", value=len(df_users['Name'].unique()))
+card3.metric(label="Companies", value=len(df_users['Company'].unique()))
 card4.metric(label="Job Titles/Designations",
-             value=len(df_users.user_occupation.unique()))
-card5.metric(label="Industries Represented", value=len(df_users.user_industry.unique()))
+             value=len(df_users['Occupation'].unique()))
+card5.metric(label="Industries Represented", value=len(df_users['Industry'].unique()))
 
 ####################
 
@@ -125,7 +125,7 @@ col1, col2 = st.columns([0.3, 0.7], gap="large")
 with col1:
     # Apply filter on the dataframe
     dynamic_filters = DynamicFilters(
-        df_users, filters=['country_name', 'company_name', 'user_occupation', 'user_salutation'])
+        df_users, filters=['Country', 'Company', 'Occupation', 'Salutation'])
     st.write("Apply filters in any order 👇")
     dynamic_filters.display_filters(location='columns', num_columns=1)
     #dynamic_filters.display_df()
@@ -141,11 +141,11 @@ with col2:
                     #color='user_salutation',
                     #title="Participants per Salutation")
 
-    fig = px.pie(df_filtered.groupby(['user_salutation']).user_name.count().reset_index(),
-         values='user_name', names='user_salutation', title='Participant per Salutation')
+    fig = px.pie(df_filtered.groupby(['Salutation'])['Name'].count().reset_index(),
+         values='Name', names='Salutation', title='Participant per Salutation')
     #fig.update_traces(textposition='inside')
     #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-    st.plotly_chart(fig, key="user_salutation", on_select="rerun")
+    st.plotly_chart(fig, key="Salutation", on_select="rerun")
 
     # Create a bar chart to show the number of users per country
     #plost.bar_chart(data=df_filtered.groupby(
@@ -155,11 +155,11 @@ with col2:
                     #direction='horizontal',
                     #title="Participants per Country")
 
-    fig = px.bar(df_filtered.groupby('country_name').user_name.count().reset_index(),
-                 y='user_name', x='country_name', text='user_name', title='Participants per Country')
+    fig = px.bar(df_filtered.groupby('Country')['Name'].count().reset_index(),
+                 y='Name', x='Country', text='Name', title='Participants per Country')
     #fig.update_traces(texttemplate='%{text:s}', textposition='outside')
     #fig.update_layout(uniformtext_minsize=8, uniformtext_mode='hide')
-    st.plotly_chart(fig, key="country_name", on_select="rerun")
+    st.plotly_chart(fig, key="Country", on_select="rerun")
 
 
     # Create a pie chart to show the number of users per designation
@@ -169,11 +169,11 @@ with col2:
                     #color='user_occupation',
                     #title="Participant Designation Distribution")
 
-    fig = px.pie(df_filtered.groupby(['user_occupation']).user_name.count().reset_index(),
-         values='user_name', names='user_occupation', title='Participant Designation Distribution')
-    fig.update_traces(textposition='inside')
-    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-    st.plotly_chart(fig, key="user_occupation", on_select="rerun")
+    fig = px.pie(df_filtered.groupby(['Occupation'])['Name'].count().reset_index(),
+         values='Name', names='Occupation', title='Participant Designation Distribution')
+    #fig.update_traces(textposition='inside')
+    #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    st.plotly_chart(fig, key="Occupation", on_select="rerun",user_container_width=True)
 
 
     # Create a pie chart to show the participant attendance rate
@@ -182,54 +182,54 @@ with col2:
                     #color='user_attendance',
                     #title="Participant Attendance Rate")
 
-    fig = px.pie(df_filtered.groupby(['user_attendance']).user_name.count().reset_index(),
-         values='user_name', names='user_attendance', title='Participant Attendance Rate')
-    fig.update_traces(textposition='inside')
-    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-    st.plotly_chart(fig, key="user_attendance", on_select="rerun")
+    fig = px.pie(df_filtered.groupby(['Attendance'])['Name'].count().reset_index(),
+         values='Name', names='Attendance', title='Participant Attendance Rate')
+    #fig.update_traces(textposition='inside')
+    #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    st.plotly_chart(fig, key="Attendance", on_select="rerun")
     
     # Create a pie chart to show the participant category distribution
-    df_filtered['user_category'] = df_filtered['user_category'].apply(lambda x: ', '.join(x))
-    df_categories = df_filtered['user_category'].value_counts().reset_index()
+    df_filtered['Category'] = df_filtered['Category'].apply(lambda x: ', '.join(x))
+    df_categories = df_filtered['Category'].value_counts().reset_index()
 
     #plost.pie_chart(data=df_categories,
         #theta='count',
         #color='user_category',
         #title="Participant Category Distribution")
     
-    fig = px.pie(df_categories, values='count', names='user_category', title='Participant Category Distribution')
-    fig.update_traces(textposition='inside')
-    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-    st.plotly_chart(fig, key="categories", on_select="rerun")
+    fig = px.pie(df_categories, values='count', names='Category', title='Participant Category Distribution')
+    #fig.update_traces(textposition='inside')
+    #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    st.plotly_chart(fig, key="Category", on_select="rerun")
 
     # Create a pie chart to show the company size distribution
-    df_filtered['company_size'] = df_filtered['company_size'].apply(lambda x: ', '.join(x))
+    df_filtered['Company Size'] = df_filtered['Company Size'].apply(lambda x: ', '.join(x))
    
     #plost.pie_chart(data=df_filtered.groupby(['company_size']).user_name.count().reset_index(),
                     #theta='user_name',
                     #color='company_size',
                     #title="Company Size Distribution")
 
-    fig = px.pie(df_filtered.groupby(['company_size']).user_name.count().reset_index(),
-                 values='user_name', names='company_size', title='Company Size Distribution')
+    fig = px.pie(df_filtered.groupby(['Company Size'])['Name'].count().reset_index(),
+                 values='Name', names='Company Size', title='Company Size Distribution')
     #fig.update_traces(textposition='inside')
     #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-    st.plotly_chart(fig, key="company_size", on_select="rerun")
+    st.plotly_chart(fig, key="Company Size", on_select="rerun")
 
 
     # Create a pie chart to show the partners wanted
-    df_filtered['user_partners'] = df_filtered['user_partners'].apply(lambda x: ', '.join(x))
+    df_filtered['Partners'] = df_filtered['Partners'].apply(lambda x: ', '.join(x))
 
     #plost.pie_chart(data=df_filtered.groupby(['user_partners']).user_name.count().reset_index(),
                     #theta='user_name',
                     #color='user_partners',
                     #title="Partner Preference Distribution")
 
-    fig = px.pie(df_filtered.groupby(['user_partners']).user_name.count().reset_index(),
-         values='user_name', names='user_partners', title='Partner Preference Distribution')
-    fig.update_traces(textposition='inside')
-    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-    st.plotly_chart(fig, key="user_partners", on_select="rerun")
+    fig = px.pie(df_filtered.groupby(['Partners'])['Name'].count().reset_index(),
+         values='Name', names='Partners', title='Partner Preference Distribution')
+    #fig.update_traces(textposition='inside')
+    #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    st.plotly_chart(fig, key="Partners", on_select="rerun")
     
 
 
@@ -244,16 +244,16 @@ st.divider()
 st.markdown("**Top Interests based on Participant Job Designation**")
 
 # Create a df to store top interests per designation
-interests_df = pd.DataFrame(columns=['user_occupation', 'top_interests'])
+interests_df = pd.DataFrame(columns=['Occupation/Designation', 'Top Interests'])
 
 # Loop to find top interests for each unique designation
-for i in range(len(df_users.user_occupation.unique())):
+for i in range(len(df_users['Occupation'].unique())):
     # Append new row to df
     new_row = {
-        "user_occupation":
-        df_users.user_occupation.unique()[i],
-        "top_interests":
-        get_top_interests(df_users.user_occupation.unique()[i], df_users)
+        "Occupation/Designation":
+        df_users['Occupation'].unique()[i],
+        "Top Interests":
+        get_top_interests(df_users['Occupation'].unique()[i], df_users)
     }
     interests_df = pd.concat(
         [interests_df, pd.DataFrame([new_row])], ignore_index=True)
@@ -268,10 +268,10 @@ df_users = pd.DataFrame(
     all_data,
     columns=['Salutation',
              'Email',
-             'Full Name',
+             'Name',
              'City',
              'Attendance',
-             'Company Name',
+             'Company',
              'Country',
              'Occupation',
              'Industry',
