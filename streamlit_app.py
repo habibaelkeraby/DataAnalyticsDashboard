@@ -171,8 +171,8 @@ with col2:
 
     fig = px.pie(df_filtered.groupby(['Occupation'])['Name'].count().reset_index(),
          values='Name', names='Occupation', title='Participant Designation Distribution')
-    #fig.update_traces(textposition='inside')
-    #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    fig.update_traces(textposition='inside')
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
     st.plotly_chart(fig, key="Occupation", on_select="rerun",user_container_width=True)
 
 
@@ -227,10 +227,10 @@ with col2:
 
     fig = px.pie(df_filtered.groupby(['Partners'])['Name'].count().reset_index(),
          values='Name', names='Partners', title='Partner Preference Distribution')
-    #fig.update_traces(textposition='inside')
-    #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    fig.update_traces(textposition='inside')
+    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
     st.plotly_chart(fig, key="Partners", on_select="rerun")
-    
+
 
 
 ####################
@@ -260,6 +260,11 @@ for i in range(len(df_users['Occupation'].unique())):
 
 # Display df
 st.dataframe(interests_df, use_container_width=True)
+
+st.markdown("**What Companies are Offering & Seeking**")
+df_company = df_users.groupby(['Company']).describe().reset_index()
+df_company = df_company.iloc[:,[0,35,43,55]]
+st.write(df_company, use_container_width=True)
 
 # Insert horizontal divider
 st.divider()
