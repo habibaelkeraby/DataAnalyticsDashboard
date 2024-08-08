@@ -6,26 +6,6 @@ import plost
 from functions import *
 import plotly.express as px
 
-
-#_____________________
-import requests
-# /?event_id=57
-#https://dataanalyticsdashboard-j5rfvadj3jkj7cda5vutul.streamlit.app/?eventId=65facda87c22b11303c0a4b8&token=<value>
-eventId = st.query_params["eventId"]
-token = st.query_params["token"]
-#event_id = str(57)
-size=100
-r = requests.get('https://manager-stage.welcome.appsaya.com/api/profile/search?eventId='+eventId+'&page=0&size=100&sort=createdAt,desc',headers={'Authorization':'Bearer '+token})
-#data = r.json()
-
-st.write(r)
-st.write(r.json())
-st.write(r.request.headers)
-
-
-#_________________
-
-
 st.set_page_config(
     page_title="Data Analysis Report DEMO",
     page_icon="📊",
@@ -33,8 +13,51 @@ st.set_page_config(
     #initial_sidebar_state="expanded"
 )
 
+#_____________________
+import requests
+#https://dataanalyticsdashboard-j5rfvadj3jkj7cda5vutul.streamlit.app/?isStage=True&eventId=65facda87c22b11303c0a4b8&token=<value>
+
+# Initializing request variables
+eventId = None
+token = None
+isStage = None
+
+try:
+    eventId = st.query_params["eventId"]
+    token = st.query_params["token"]
+    isStage = st.query_params["isStage"]
+except:
+    raise TypeError('Missing query parameters')
+
+if isStage == False:
+    url = 'https://manager.appsaya.com/'
+else:
+    url = 'https://manager-stage.welcome.appsaya.com/'
+
+
+size=100
+r = requests.get(url+'api/profile/search?eventId='+eventId+'&page=0&size=100&sort=createdAt,desc',headers={'Authorization':'Bearer '+token})
+
+try:
+    data = r.json()
+except:
+    raise TypeError('Token expired')
+
+#st.write(r)
+#st.write(data['content'])
+#st.write(r.request.headers)
+
+#import json
+#with open('data.json', 'w') as f:
+    #json.dump(data['content'], f)
+
+
+#_________________
+
+
 # Fetching data
-dataset = pd.read_json('profile.json')
+dataset  = data['content']
+#dataset = pd.read_json('data.json')
 #st.write(dataset)
 #st.write(dataset.iloc[0])
 
@@ -43,13 +66,33 @@ all_data = []
 size = len(dataset)
 
 for i in range(size):
-    data = dataset.iloc[i]
+    data = dataset[i]
 
-    user_salutation = data['salutation']
-    user_email = data['email']
-    user_name = data['firstName'] + " " + data['lastName']
-    user_city = data['businessCity']
-    user_attendance = data['presentAtEventVenue']
+    try:
+        user_salutation = data['salutation']
+    except:
+        user_salutation = 'Not Specified'
+        
+    try:
+        user_email = data['email']
+    except:
+        user_email = 'Not Specified'
+    
+    try:
+        user_name = data['firstName'] + " " + data['lastName']
+    except:
+        user_name = 'Not Specified'
+        
+    try:
+        user_city = data['businessCity']
+    except:
+        user_city = 'Not Specified'
+        
+    user_checkin = data['presentAtEventVenue']
+    try:
+        user_verified = data['user']['emailVerified']
+    except:
+        user_verified = 'Not Specified'
     company_name = data['company']
     country_name = data['country']['name']
     user_occupation = data['occupation']
@@ -64,24 +107,23 @@ for i in range(size):
     user_interestlist = [industry['name'] for industry in user_interests]
     user_lookingfor = data['lookingFor']
     user_lookingforlist = [element['label'] for element in user_lookingfor]
-    user_category = data['metaField']['je suis :']
-    company_size = data['metaField']['quelle est la taille de votre entreprise ?']
-    user_partners = data['metaField']['quel type de partenaire recherchez-vous ?']
+    #user_category = data['metaField']['je suis :']
+    #company_size = data['metaField']['quelle est la taille de votre entreprise ?']
+    #user_partners = data['metaField']['quel type de partenaire recherchez-vous ?']
     profile = [user_salutation,
       user_email,
       user_name,
       user_city,
-      user_attendance,
-      company_name,
+      user_checkin,
+               user_verified,
+               company_name,
       country_name,
       user_occupation,
       user_industry,
       user_offerlist,
       user_interestlist,
       user_lookingforlist,
-      user_category,
-      company_size,
-      user_partners]
+      ]
     all_data.append(profile)
 
 
@@ -92,7 +134,8 @@ df_users = pd.DataFrame(
      'Email',
      'Name',
      'City',
-     'Attendance',
+     'CheckIn',
+             'Account Verified',
      'Company',
      'Country',
      'Occupation',
@@ -100,9 +143,7 @@ df_users = pd.DataFrame(
      'Offers',
      'Interests',
      'Looking for',
-     'Category',
-     'Company Size',
-     'Partners']
+]
 )
 
 df_users.fillna("Not Specified", inplace=True)
@@ -113,7 +154,7 @@ df_users.fillna("Not Specified", inplace=True)
 # DATA VISUALIZATION SECTION
 
 # dashboard title
-st.title("Data Analysis Dashboard - DEMO")
+st.title("Data Analysis Dashboard")
 
 # REPORT SECTION 1
 
@@ -196,60 +237,68 @@ with col2:
     st.plotly_chart(fig, key="Occupation", on_select="rerun",user_container_width=True)
 
 
-    # Create a pie chart to show the participant attendance rate
+    # Create a pie chart to show the participant check-in rate
     #plost.pie_chart(data=df_filtered.groupby(['user_attendance']).user_name.count().reset_index(),
                     #theta='user_name',
                     #color='user_attendance',
                     #title="Participant Attendance Rate")
 
-    fig = px.pie(df_filtered.groupby(['Attendance'])['Name'].count().reset_index(),
-         values='Name', names='Attendance', title='Participant Attendance Rate')
+    fig = px.pie(df_filtered.groupby(['CheckIn'])['Name'].count().reset_index(),
+         values='Name', names='CheckIn', title='Participant Check-in Rate')
     #fig.update_traces(textposition='inside')
     #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-    st.plotly_chart(fig, key="Attendance", on_select="rerun")
+    st.plotly_chart(fig, key="CheckIn", on_select="rerun")
+
+
+    # Create a pie chart to show the email verfication rate
+
+
+    fig = px.pie(df_filtered.groupby(['Account Verified'])['Name'].count().reset_index(),
+         values='Name', names='Account Verified', title='Email Verification Rate')
+    #fig.update_traces(textposition='inside')
+    #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    st.plotly_chart(fig, key="Account Verified", on_select="rerun")
     
     # Create a pie chart to show the participant category distribution
-    df_filtered['Category'] = df_filtered['Category'].apply(lambda x: ', '.join(x))
-    df_categories = df_filtered['Category'].value_counts().reset_index()
+    ##df_filtered['Category'] = df_filtered['Category'].apply(lambda x: ', '.join(x))
+    ##df_categories = df_filtered['Category'].value_counts().reset_index()
 
     #plost.pie_chart(data=df_categories,
         #theta='count',
         #color='user_category',
         #title="Participant Category Distribution")
     
-    fig = px.pie(df_categories, values='count', names='Category', title='Participant Category Distribution')
+    ##fig = px.pie(df_categories, values='count', names='Category', title='Participant Category Distribution')
     #fig.update_traces(textposition='inside')
     #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-    st.plotly_chart(fig, key="Category", on_select="rerun")
+    ##st.plotly_chart(fig, key="Category", on_select="rerun")
 
     # Create a pie chart to show the company size distribution
-    df_filtered['Company Size'] = df_filtered['Company Size'].apply(lambda x: ', '.join(x))
+    ##df_filtered['Company Size'] = df_filtered['Company Size'].apply(lambda x: ', '.join(x))
    
     #plost.pie_chart(data=df_filtered.groupby(['company_size']).user_name.count().reset_index(),
                     #theta='user_name',
                     #color='company_size',
                     #title="Company Size Distribution")
 
-    fig = px.pie(df_filtered.groupby(['Company Size'])['Name'].count().reset_index(),
-                 values='Name', names='Company Size', title='Company Size Distribution')
+    ##fig = px.pie(df_filtered.groupby(['Company Size'])['Name'].count().reset_index(),values='Name', names='Company Size', title='Company Size Distribution')
     #fig.update_traces(textposition='inside')
     #fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-    st.plotly_chart(fig, key="Company Size", on_select="rerun")
+    ##st.plotly_chart(fig, key="Company Size", on_select="rerun")
 
 
     # Create a pie chart to show the partners wanted
-    df_filtered['Partners'] = df_filtered['Partners'].apply(lambda x: ', '.join(x))
+    ##df_filtered['Partners'] = df_filtered['Partners'].apply(lambda x: ', '.join(x))
 
     #plost.pie_chart(data=df_filtered.groupby(['user_partners']).user_name.count().reset_index(),
                     #theta='user_name',
                     #color='user_partners',
                     #title="Partner Preference Distribution")
 
-    fig = px.pie(df_filtered.groupby(['Partners'])['Name'].count().reset_index(),
-         values='Name', names='Partners', title='Partner Preference Distribution')
-    fig.update_traces(textposition='inside')
-    fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
-    st.plotly_chart(fig, key="Partners", on_select="rerun")
+    ##fig = px.pie(df_filtered.groupby(['Partners'])['Name'].count().reset_index(),values='Name', names='Partners', title='Partner Preference Distribution')
+    ##fig.update_traces(textposition='inside')
+    ##fig.update_layout(uniformtext_minsize=12, uniformtext_mode='hide')
+    ##st.plotly_chart(fig, key="Partners", on_select="rerun")
 
 
 
@@ -283,8 +332,14 @@ st.dataframe(interests_df, use_container_width=True)
 
 st.markdown("**What Companies are Offering & Seeking**")
 df_company = df_users.groupby(['Company']).describe().reset_index()
-df_company = df_company.iloc[:,[0,35,43,55]]
-st.write(df_company, use_container_width=True)
+#st.write(df_company.columns)
+#df_company = df_company.iloc[:,[0,35,38,42]]
+st.dataframe(df_company[[(         'Company',       ''),
+                     (        'Industry',    'top'),
+                     (          'Offers',    'top'),
+                     (     'Looking for',    'top'),]],
+        use_container_width=True
+        )
 
 # Insert horizontal divider
 st.divider()
@@ -295,7 +350,8 @@ df_users = pd.DataFrame(
              'Email',
              'Name',
              'City',
-             'Attendance',
+             'CheckIn',
+             'Account Verified',
              'Company',
              'Country',
              'Occupation',
@@ -303,8 +359,6 @@ df_users = pd.DataFrame(
              'Offers',
              'Interests',
              'Looking for',
-             'Category',
-             'Company Size',
-             'Partners']
+]
 )
 st.write(df_users)
